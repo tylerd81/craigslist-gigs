@@ -4,19 +4,21 @@ const fs = require("fs");
 
 (async () => {
   const gigUrlFile = "gig_urls.txt";
-  const searchRe = /developer|web|site|javascript|php|coding|computer/;
+  const searchRe = /developer|web|site|javascript|php|coding|computer|html|css/;
   const possibleGigs = [];
 
   //load the gig_urls.txt
-  try {
-    const gigUrls = fs.readFileSync(gigUrlFile, "utf8");
-    const urls = gigUrls.split("\n");
 
-    //open the url
+  const gigUrls = fs.readFileSync(gigUrlFile, "utf8");
+  const urls = gigUrls.split("\n");
 
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i];
-      console.log(`Finding gigs in ${url}`);
+  //open the url
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i];
+    console.log(`Finding gigs in ${url}`);
+
+    try {
       const response = await axios.get(url);
       const $ = cheerio.load(response.data);
       // find a.result-title
@@ -28,27 +30,24 @@ const fs = require("fs");
         const gigUrl = $(gig).attr("href");
 
         if (gigText.search(searchRe) !== -1) {
-          const possibleGig = `${gigText} : ${gigUrl}`;
-          possibleGigs.push(`${gigText} : ${gigUrl}`);
+          possibleGigs.push({ gigTitle: gigText, url: gigUrl });
         }
       });
-    }
-    if (possibleGigs.length !== 0) {
-      console.log(`Found ${possibleGigs.length} possible gigs`);
-      writeGigs(possibleGigs);
-    } else {
-      console.log("No Gigs to write?");
-    }
-  } catch (err) {
-    console.log(err.message);
-    if (possibleGigs.length !== 0) {
-      writeGigs(possibleGigs);
-    } else {
-      console.log("No Gigs to write?");
+    } catch (err) {
+      console.log(err.message);
     }
   }
 
-  function writeGigs(gigData) {
-    fs.writeFileSync("possible_gigs.txt", gigData.join("\n"));
+  if (possibleGigs.length !== 0) {
+    console.log(`Found ${possibleGigs.length} possible gigs`);
+    writeGigs(possibleGigs);
+  } else {
+    console.log("No Gigs to write?");
   }
+
 })();
+
+function writeGigs(gigData) {
+  fs.writeFileSync("possible_gigs.json", JSON.stringify(gigData));
+  // fs.writeFileSync("possible_gigs.txt", gigData.join("\n"));
+}

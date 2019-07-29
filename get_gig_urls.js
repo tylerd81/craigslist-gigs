@@ -1,3 +1,7 @@
+// grabs the links for the computer gigs section of
+// every nearby city on craigslist. 
+// It writes the urls to gig_urls.txt.
+
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
